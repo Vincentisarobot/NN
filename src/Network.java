@@ -52,26 +52,66 @@ public class Network {
         return result_activation;
     }
 
-    private void stochasticGradientDescent(Double[][][] training_data,int stages,int sample_batch_size,Double[][] test_Data){
+    private void stochasticGradientDescent(Double[][][][] training_data,int stages,int sample_batch_size,Double[][] result_test){
 
         for(int i = 0;i<stages;i++){
-            List<Double[][]>training_data_list = Arrays.asList(training_data);
+            List<Double[][][]>training_data_list = Arrays.asList(training_data);
             Collections.shuffle(training_data_list);
-            List<Double[][]> sample_batches = new ArrayList<>();
+            List<Double[][][]> sample_batches = new ArrayList<>();
             for(int j = 0;j<sample_batch_size;j++){
 //                sample_batches.add(training_data_list.get(seed.nextInt()%training_data_list.size()));  Double Random?
                 sample_batches.add(training_data_list.get(j*sample_batch_size%training_data_list.size()));
             }
-            for(Double[][] sample:sample_batches){
+            for(Double[][][] sample:sample_batches){
                 update(sample);
             }
+            if(result_test != null){
+                System.out.println("Stage "+ i +" " + evaluate(result_test) +" / "+ result_test.length);
+            }
+            else{
+                System.out.println("Stage "+ i +" completed");
+            }
         }
-
-
     }
 
-    private void update(Double[][] sample){
+    private int evaluate(Double[][] test_result){
+        int result =0;
+        return result;
+    }
 
+    private void update(Double[][][] sample){ //sample[0] for x, [1] for y
+        Double[][][] weight_update = new Double[weights.length][][];
+        Double[][] biases_update = new Double[biases.length][];
+        //BackProp
+        for (int i= 0; i < sample.length;i++){
+            backprop(weight_update,biases_update,sample[i]);
+        }
+        for (int i=0; i < weights.length;i++){
+            for(int j=0; j <weights[i].length;j++){
+                biases[i][j] -= (learning_rate*sample.length)*biases_update[i][j];
+                for(int k =0; k<weights[i][j].length;k++){
+                    weights[i][j][k] -= (learning_rate*sample.length)*weight_update[i][j][k];
+                }
+            }
+        }
+//        Double[] activation = sample[0];
+//        Double[][] activation_layers = new Double[layer_sizes.length][];
+//        activation_layers[0] = activation;
+//        Double[][] z_layers = new Double[layer_sizes.length-1][];
+//        for(int i =0; i<biases.length;i++){
+//
+//        }
+    }
+
+    public void backprop(Double[][][] delta_weights,Double[][] delta_biases,Double[][] sample){
+        Double[] activation = sample[0];
+        Double[][] activation_layers = new Double[layer_sizes.length][];
+        activation_layers[0] = activation;
+        Double[][] z_layers = new Double[layer_sizes.length-1][];
+        for(int i =0; i<biases.length;i++){
+            Double[] z = new Double[biases[i].length];
+            z_layers[i] = z;
+        }
     }
 
     static public void main(String[] args){
